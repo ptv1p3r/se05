@@ -10,7 +10,14 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import io.flutter.app.FlutterActivity;
 import io.flutter.plugin.common.MethodCall;
@@ -19,16 +26,29 @@ import io.flutter.plugins.GeneratedPluginRegistrant;
 
 public class MainActivity extends FlutterActivity implements LocationListener {
 
+  public final int REQUEST_CODE_INTERNET = 103;
+  public final int REQUEST_CODE_ACCESS_FINE_LOCATION = 100;
+  public final int REQUEST_CODE_ACCESS_COARSE_LOCATION = 101;
+  public final int REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 102;
+
   private Intent forService;
 
   private LocationManager locationManager;
   private String provider;
-  private String tt;
+
+  SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
+  Date now = new Date();
+  String fileName = formatter.format(now) + ".csv";
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     GeneratedPluginRegistrant.registerWith(this);
+
+//    // Permission check and request
+//    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+//        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},REQUEST_CODE_WRITE_EXTERNAL_STORAGE);
+//    }
 
     forService = new Intent(MainActivity.this,MyService.class);
 
@@ -39,7 +59,6 @@ public class MainActivity extends FlutterActivity implements LocationListener {
                 if(methodCall.method.equals("startService")){
                   startService();
                   startDataTracking();
-                  //locationManager.requestLocationUpdates(provider, 400, 1, this);
                   result.success("Service Started");
                 }
               }
@@ -65,17 +84,20 @@ public class MainActivity extends FlutterActivity implements LocationListener {
 //    super.onPause();
 //    locationManager.removeUpdates(this);
 //  }
+
   private void startDataTracking(){
+
     // Permission check and request
     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-      ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},1);
-      ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},1);
+      ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},REQUEST_CODE_ACCESS_FINE_LOCATION);
+      ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},REQUEST_CODE_ACCESS_COARSE_LOCATION);
     }
 
     // Get the location manager
     locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
     Criteria criteria = new Criteria();
     provider = locationManager.getBestProvider(criteria, true);
+
     locationManager.requestLocationUpdates(provider, 0, 0, this);
 //    Location location = locationManager.getLastKnownLocation(provider);
 //
@@ -97,14 +119,43 @@ public class MainActivity extends FlutterActivity implements LocationListener {
     }
   }
 
+  private void writeDataToFile(double _latitude, double _longitude, double _altitude, double _speed, double _bearing){
+
+    // Permission check and request
+    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+      ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},REQUEST_CODE_WRITE_EXTERNAL_STORAGE);
+    }
+
+    try
+    {
+      File root = new File(Environment.getExternalStorageDirectory()+ File.separator + "Trajetorias");
+
+      if (!root.exists())
+      {
+        root.mkdirs();
+      }
+
+      File dataFile = new File(root, fileName);
+
+      FileWriter writer = new FileWriter(dataFile,true);
+      writer.append(_latitude + "," + _longitude + "," + _altitude + "," + _speed + "," + _bearing + "\n");
+      writer.flush();
+      writer.close();
+    }
+    catch(IOException e)
+    {
+      e.printStackTrace();
+    }
+  }
+
   @Override
   public void onLocationChanged(Location location) {
-    double lat = location.getLatitude();
-    double lng = location.getLongitude();
-    double alt = location.getAltitude();
-    double vel = location.getSpeed();
-    double dir = location.getBearing();
-    System.out.println("Coordenadas lat: " + lat + " lng: " + lng);
+//    System.out.println("Coordenadas lat: " + location.getLatitude() + " lng: " + location.getLongitude());
+
+    if (location != null){
+      writeDataToFile(location.getLatitude(), location.getLongitude(), location.getAltitude(), location.getSpeed(), location.getBearing());
+    }
+
   }
 
   @Override
