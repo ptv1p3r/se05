@@ -9,7 +9,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'ISMAT SE Android Client',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
