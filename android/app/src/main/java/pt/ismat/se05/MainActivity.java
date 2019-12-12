@@ -32,40 +32,18 @@ public class MainActivity extends FlutterActivity implements LocationListener {
 
     forService = new Intent(MainActivity.this,MyService.class);
 
-    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},1);
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},1);
-    }
-
-    // Get the location manager
-    locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-    Criteria criteria = new Criteria();
-    provider = locationManager.getBestProvider(criteria, false);
-    Location location = locationManager.getLastKnownLocation(provider);
-
-//     Initialize the location fields
-    if (location != null) {
-      System.out.println("Provider " + provider + " has been selected.");
-      onLocationChanged(location);
-    } else {
-      tt = "Location not available";
-    }
-
-//    locationManager.requestLocationUpdates(provider, 400, 1, this);
-
     new MethodChannel(getFlutterView(),"pt.ismat.se05.messages")
             .setMethodCallHandler(new MethodChannel.MethodCallHandler() {
               @Override
               public void onMethodCall(MethodCall methodCall, MethodChannel.Result result) {
                 if(methodCall.method.equals("startService")){
                   startService();
-
+                  startDataTracking();
+                  //locationManager.requestLocationUpdates(provider, 400, 1, this);
                   result.success("Service Started");
                 }
               }
             });
-
-
   }
 
   @Override
@@ -75,11 +53,11 @@ public class MainActivity extends FlutterActivity implements LocationListener {
   }
 
   /* Request updates at startup */
-//  @Override
-//  protected void onResume() {
-//    super.onResume();
-//    locationManager.requestLocationUpdates(provider, 400, 1, this);
-//  }
+  @Override
+  protected void onResume() {
+    super.onResume();
+    System.out.println("onResume");
+  }
 
   /* Remove the locationlistener updates when Activity is paused */
 //  @Override
@@ -87,6 +65,29 @@ public class MainActivity extends FlutterActivity implements LocationListener {
 //    super.onPause();
 //    locationManager.removeUpdates(this);
 //  }
+  private void startDataTracking(){
+    // Permission check and request
+    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+      ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},1);
+      ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},1);
+    }
+
+    // Get the location manager
+    locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+    Criteria criteria = new Criteria();
+    provider = locationManager.getBestProvider(criteria, true);
+    locationManager.requestLocationUpdates(provider, 0, 0, this);
+//    Location location = locationManager.getLastKnownLocation(provider);
+//
+//    // Initialize the location fields
+//    if (location != null) {
+//      System.out.println("Provider " + provider + " has been selected.");
+//      onLocationChanged(location);
+//    } else {
+//      System.out.println("Location not available");
+//    }
+
+  }
 
   private void startService(){
     if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
@@ -103,20 +104,21 @@ public class MainActivity extends FlutterActivity implements LocationListener {
     double alt = location.getAltitude();
     double vel = location.getSpeed();
     double dir = location.getBearing();
+    System.out.println("Coordenadas lat: " + lat + " lng: " + lng);
   }
 
   @Override
   public void onStatusChanged(String s, int i, Bundle bundle) {
-
+    System.out.println("onStatusChanged: " + s);
   }
 
   @Override
   public void onProviderEnabled(String s) {
-    tt = "Location not available";
+    System.out.println("onProviderEnabled: " + s);
   }
 
   @Override
   public void onProviderDisabled(String s) {
-
+    System.out.println("onProviderDisabled: " + s);
   }
 }
