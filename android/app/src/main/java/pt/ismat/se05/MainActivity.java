@@ -95,7 +95,7 @@ public class MainActivity extends FlutterActivity implements LocationListener {
         Criteria criteria = new Criteria();
         provider = locationManager.getBestProvider(criteria, true);
 
-        locationManager.requestLocationUpdates(provider, 0, 0, this);
+        locationManager.requestLocationUpdates(provider, 5000, 0, this);
 //    Location location = locationManager.getLastKnownLocation(provider);
 //
 //    // Initialize the location fields
@@ -148,7 +148,7 @@ public class MainActivity extends FlutterActivity implements LocationListener {
 
             String currentDateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
             writer = new FileWriter(dataFile,true);
-            writer.append("PM," + _latitude + "," + _longitude + "," + _altitude + "," + _speed + "," + _bearing + "," + currentDateTime + "\n");
+            writer.append("RS," + _latitude + "," + _longitude + "," + _altitude + "," + _speed + "," + _bearing + "," + currentDateTime + "\n");
 
             writer.flush();
             writer.close();
