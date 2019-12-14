@@ -134,21 +134,21 @@ public class MainActivity extends FlutterActivity implements LocationListener {
 
             SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
             Date now = new Date();
-            String fileName = formatter.format(now) + ".csv";
+            String fileName = formatter.format(now) + ".csd";
             File dataFile = new File(root, fileName);
 
             if (!dataFile.exists())
             {
                 writer = new FileWriter(dataFile,false);
                 writer.write("ISMAT SE 2019-2020 Data point file" + "\n\n");
-                writer.write("Latitude,Longitude,Altitude,Speed,Bearing,Datetime"+ "\n");
+                writer.write("Inicials,Latitude,Longitude,Altitude,Speed,Bearing,Datetime"+ "\n");
                 writer.flush();
                 writer.close();
             }
 
             String currentDateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
             writer = new FileWriter(dataFile,true);
-            writer.append(_latitude + "," + _longitude + "," + _altitude + "," + _speed + "," + _bearing + "," + currentDateTime + "\n");
+            writer.append("PM," + _latitude + "," + _longitude + "," + _altitude + "," + _speed + "," + _bearing + "," + currentDateTime + "\n");
 
             writer.flush();
             writer.close();
