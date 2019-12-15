@@ -17,7 +17,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import io.flutter.app.FlutterActivity;
@@ -26,11 +28,13 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugins.GeneratedPluginRegistrant;
 
 public class MainActivity extends FlutterActivity implements LocationListener {
+    String[] appPermissions = {
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
 
-    public final int REQUEST_CODE_INTERNET = 103;
-    public final int REQUEST_CODE_ACCESS_FINE_LOCATION = 100;
-    public final int REQUEST_CODE_ACCESS_COARSE_LOCATION = 101;
-    public final int REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 102;
+    private static final int PERMISSIONS_REQUEST_CODE = 100;
 
     private Intent forService;
 
@@ -49,9 +53,19 @@ public class MainActivity extends FlutterActivity implements LocationListener {
                     @Override
                     public void onMethodCall(MethodCall methodCall, MethodChannel.Result result) {
                         if(methodCall.method.equals("startService")){
-                            startService();
-                            startDataTracking();
-                            result.success("Service Started");
+                            if(checkAndRequestPermissions()){
+                                startService();
+                                startDataTracking();
+                                result.success("Service Started");
+                            } else {
+                                result.error("ERROR","Service not Started",null);
+                            }
+                        } else if(methodCall.method.equals("stopService")){
+                            locationManager.removeUpdates(MainActivity.this);
+                            stopService(forService);
+                            result.success("Service Stopped");
+                        } else {
+                            result.notImplemented();
                         }
                     }
                 });
@@ -70,14 +84,29 @@ public class MainActivity extends FlutterActivity implements LocationListener {
         System.out.println("onResume");
     }
 
-    private void startDataTracking(){
-
-        // Permission check and request
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},REQUEST_CODE_ACCESS_FINE_LOCATION);
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},REQUEST_CODE_ACCESS_COARSE_LOCATION);
+    private boolean checkAndRequestPermissions() {
+        // verifica que permissoes estao disponiveis
+        List<String> listPermissionsNeeded = new ArrayList<>();
+        for (String perm : appPermissions ){
+            if(ActivityCompat.checkSelfPermission(this, perm) != PackageManager.PERMISSION_GRANTED){
+                listPermissionsNeeded.add(perm);
+            }
         }
 
+        // efetua pedido de permissoes
+        if(!listPermissionsNeeded.isEmpty()){
+            ActivityCompat.requestPermissions(this,
+                    listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]),
+                    PERMISSIONS_REQUEST_CODE
+            );
+            return false;
+        }
+
+        // permissoes ok
+        return true;
+    }
+
+    private void startDataTracking(){
         // Get the location manager
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         Criteria criteria = new Criteria();
@@ -106,11 +135,6 @@ public class MainActivity extends FlutterActivity implements LocationListener {
 
     private void writeDataToFile(double _latitude, double _longitude, double _altitude, double _speed, double _bearing){
         FileWriter writer = null;
-
-        // Permission check and request
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},REQUEST_CODE_WRITE_EXTERNAL_STORAGE);
-        }
 
         try
         {

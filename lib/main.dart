@@ -24,29 +24,73 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
+  var _serviceEnabled;
 
   void startServiceInPlatform() async {
     if(Platform.isAndroid){
       var methodChannel = MethodChannel("pt.ismat.se05.messages");
       String data = await methodChannel.invokeMethod("startService");
+
+      if (data.isNotEmpty){
+        setState(() {
+          _serviceEnabled = true;
+        });
+      }
+
+      debugPrint(data);
+    }
+  }
+
+  void stopServiceInPlatform() async {
+    if(Platform.isAndroid){
+      var methodChannel = MethodChannel("pt.ismat.se05.messages");
+      String data = await methodChannel.invokeMethod("stopService");
+
+      if (data.isNotEmpty){
+        setState(() {
+          _serviceEnabled = false;
+        });
+      }
+
       debugPrint(data);
     }
   }
 
   @override
+  void initState() {
+    _serviceEnabled = false;
+  }
+
+  @override
   Widget build(BuildContext context) {
+
     return Container(
       color: Colors.white,
-      child: Center(
-        child: RaisedButton(
-            child: Text("Start location tracker"),
-            onPressed: (){
-              startServiceInPlatform();
-            }
-
-        ),
+      child: new Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          _buildServiceStartButton(),
+          _buildServiceStopButton(),
+        ],
       ),
+    );
+  }
+
+  Widget _buildServiceStartButton() {
+    return new RaisedButton(
+      child: new Text(
+          _serviceEnabled ? "GPS tracker started!" : "Start GPS tracker"
+      ),
+      onPressed: _serviceEnabled ? null : startServiceInPlatform,
+    );
+  }
+
+  Widget _buildServiceStopButton() {
+    return new RaisedButton(
+      child: new Text(
+          _serviceEnabled ? "GPS tracker stoped!" : "Stop GPS tracker"
+      ),
+      onPressed: _serviceEnabled ? stopServiceInPlatform : null,
     );
   }
 }
