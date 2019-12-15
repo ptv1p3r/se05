@@ -42,11 +42,6 @@ public class MainActivity extends FlutterActivity implements LocationListener {
         super.onCreate(savedInstanceState);
         GeneratedPluginRegistrant.registerWith(this);
 
-//    // Permission check and request
-//    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-//        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},REQUEST_CODE_WRITE_EXTERNAL_STORAGE);
-//    }
-
         forService = new Intent(MainActivity.this,MyService.class);
 
         new MethodChannel(getFlutterView(),"pt.ismat.se05.messages")
@@ -74,13 +69,6 @@ public class MainActivity extends FlutterActivity implements LocationListener {
         super.onResume();
         System.out.println("onResume");
     }
-
-    /* Remove the locationlistener updates when Activity is paused */
-//  @Override
-//  protected void onPause() {
-//    super.onPause();
-//    locationManager.removeUpdates(this);
-//  }
 
     private void startDataTracking(){
 
