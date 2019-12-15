@@ -48,22 +48,23 @@ public class MainActivity extends FlutterActivity implements LocationListener {
 
         forService = new Intent(MainActivity.this,MyService.class);
 
+        // method call from flutter
         new MethodChannel(getFlutterView(),"pt.ismat.se05.messages")
                 .setMethodCallHandler(new MethodChannel.MethodCallHandler() {
                     @Override
                     public void onMethodCall(MethodCall methodCall, MethodChannel.Result result) {
                         if(methodCall.method.equals("startService")){
-                            if(checkAndRequestPermissions()){
-                                startService();
-                                startDataTracking();
+                            if(checkAndRequestPermissions()){ // check android permissions
+                                startService(); // star service
+                                startDataTracking(); // star gps tracking
                                 result.success("Service Started");
                             } else {
                                 result.error("ERROR","Service not Started",null);
                             }
                         } else if(methodCall.method.equals("stopService")){
                             locationManager.removeUpdates(MainActivity.this);
-                            stopService(forService);
-                            result.success("Service Stopped");
+                            stopService(forService); // stop service
+                            result.success("Service Stopped"); // stop location updates
                         } else {
                             result.notImplemented();
                         }
@@ -84,6 +85,7 @@ public class MainActivity extends FlutterActivity implements LocationListener {
         System.out.println("onResume");
     }
 
+    // check and request android permissions
     private boolean checkAndRequestPermissions() {
         // verifica que permissoes estao disponiveis
         List<String> listPermissionsNeeded = new ArrayList<>();
@@ -106,6 +108,7 @@ public class MainActivity extends FlutterActivity implements LocationListener {
         return true;
     }
 
+    // star gps data tracking
     private void startDataTracking(){
         // Get the location manager
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -125,6 +128,7 @@ public class MainActivity extends FlutterActivity implements LocationListener {
 
     }
 
+    // star service in foreground
     private void startService(){
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
             startForegroundService(forService);
@@ -133,6 +137,7 @@ public class MainActivity extends FlutterActivity implements LocationListener {
         }
     }
 
+    // write gps data to file
     private void writeDataToFile(double _latitude, double _longitude, double _altitude, double _speed, double _bearing){
         FileWriter writer = null;
 

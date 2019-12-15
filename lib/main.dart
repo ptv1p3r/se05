@@ -88,7 +88,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget _buildServiceStopButton() {
     return new RaisedButton(
       child: new Text(
-          _serviceEnabled ? "GPS tracker stoped!" : "Stop GPS tracker"
+          _serviceEnabled ? "GPS tracker stopped!" : "Stop GPS tracker"
       ),
       onPressed: _serviceEnabled ? stopServiceInPlatform : null,
     );
