@@ -18,7 +18,7 @@ public class MyService extends Service {
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
             Notification.Builder builder = new Notification.Builder(this,"messages")
-                    .setContentText("This is running in Background")
+                    .setContentText("Tracking GPS and storing data in file...")
                     .setContentTitle("GPS Data tracking")
                     .setSmallIcon(R.drawable.ic_android_black_24dp);
 
